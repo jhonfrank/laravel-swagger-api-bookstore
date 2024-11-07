@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('number');
             $table->decimal('total', 8, 2);
-            $table->foreignId('user_id');
+            $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });
     }

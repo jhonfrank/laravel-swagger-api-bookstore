@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->decimal('unit_price', 8, 2);
             $table->integer('quantity');
             $table->decimal('sub_total', 8, 2);
-            $table->foreignId('order_id');
-            $table->foreignId('book_id');
+            $table->foreignId('order_id')->constrained();
+            $table->foreignId('book_id')->constrained();
             $table->timestamps();
         });
     }
