@@ -4,7 +4,6 @@ namespace App\Response;
 
 class ApiResponseJson
 {
-
     const HTTP_OK = 200;
     const HTTP_CREATED = 201;
     const HTTP_NO_CONTENT = 204;
@@ -12,76 +11,107 @@ class ApiResponseJson
     const HTTP_UNAUTHORIZED = 401;
     const HTTP_FORBIDDEN = 403;
     const HTTP_NOT_FOUND = 404;
-    const HTTP_UNPROCESSABLE_CONTENT = 422;
+    const HTTP_UNPROCESSABLE_ENTITY = 422;
     const HTTP_INTERNAL_SERVER_ERROR = 500;
 
-    private $statusCode;
+    private $status;
     private $data;
     private $message;
+    private $success;
 
-    public function __construct($statusCode, $data = null, $message = '')
+    public static function make($response, $status)
     {
-        $this->statusCode = $statusCode;
-        $this->data = $data;
-        $this->message = $message;
+        return response()->json($response, $status);
     }
 
-    public function send()
+    public static function success($status, $data = null, $message = null)
     {
         $response = [
-            'data' => $this->data
+            'success' => true
         ];
 
-        if (!empty($this->message)) {
-            $response['message'] = $this->message;
+        if (!is_null($message)) {
+            $response['message'] = $message;
         }
 
-        return response()->json($response, $this->statusCode);
+        if (!is_null($data)) {
+            $response['data'] = $data;
+        }
+
+        return self::make($response, $status);
     }
 
-    public static function ok($data)
+    public static function error($status, $message = null, $errors = null)
     {
-        return new self(self::HTTP_OK, $data);
+        $response = [
+            'success' => false
+        ];
+
+        if (!is_null($message)) {
+            $response['message'] = $message;
+        }
+
+        $error = null;
+
+        if (!is_array($errors)) {
+            $error = $errors;
+            $errors = null;
+        }
+
+        if (!is_null($error)) {
+            $response['error'] = $error;
+        }
+
+        if (!is_null($errors)) {
+            $response['errors'] = $errors;
+        }
+
+        return self::make($response, $status);
     }
 
-    public static function created($data)
+    public static function ok($data, $message = null)
     {
-        return new self(self::HTTP_CREATED, $data, 'Resource created successfully.');
+        return self::success(self::HTTP_OK, $data, $message);
     }
 
-    public static function noContent()
+    public static function created($data, $message = 'Resource created successfully.')
     {
-        return new self(self::HTTP_NO_CONTENT);
+        return self::success(self::HTTP_CREATED, $data, $message);
+    }
+
+    public static function noContent($message = null)
+    {
+        return self::success(self::HTTP_NO_CONTENT, message: $message);
     }
 
     public static function badRequest($message = 'Bad request.')
     {
-        return new self(self::HTTP_BAD_REQUEST, null, $message);
+        return self::error(self::HTTP_BAD_REQUEST, $message);
     }
 
     public static function unauthorized($message = 'Unauthorized.')
     {
-        return new self(self::HTTP_UNAUTHORIZED, null, $message);
+        return self::error(self::HTTP_UNAUTHORIZED, $message);
     }
 
     public static function forbidden($message = 'Forbidden.')
     {
-        return new self(self::HTTP_FORBIDDEN, null, $message);
+        return self::error(self::HTTP_FORBIDDEN, $message);
     }
 
     public static function notFound($message = 'Resource not found.')
     {
-        return new self(self::HTTP_NOT_FOUND, null, $message);
+        return self::error(self::HTTP_NOT_FOUND, $message);
     }
 
-    public static function unprocessableContent($data, $message = 'Request is incorrect format.')
+    public static function unprocessableEntity($errors, $message = 'Request is incorrect format.')
     {
-        return new self(self::HTTP_UNPROCESSABLE_CONTENT, $data, $message);
+        return self::error(self::HTTP_UNPROCESSABLE_ENTITY, $message, $errors);
     }
 
     public static function internalServerError($message = 'Internal server error.')
     {
-        return new self(self::HTTP_INTERNAL_SERVER_ERROR, null, $message);
+        return self::error(self::HTTP_INTERNAL_SERVER_ERROR, $message);
     }
 
 }
